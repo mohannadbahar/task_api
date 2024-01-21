@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Information</title>
+
+</head>
+<body>
+  <div id="productContainer" class="product-form"></div>
+
+  <script>
+    const apiUrl = 'https://dummyjson.com/products'; 
+
+    const productApi = {
+      getProducts: async function (limit, skip) {
+        try {
+          const response = await fetch(apiUrl);
+          const jsonData = await response.json();
+
+          const products = jsonData.products.slice(skip, skip + limit).map(product => {
+            return {
+              id: product.id,
+              title: product.title,
+              description: product.description,
+              price: product.price,
+              discountPercentage: product.discountPercentage,
+              stock: product.stock,
+              brand: product.brand,
+              category: product.category,
+              thumbnail: product.thumbnail,
+              images: product.images,
+            };
+          });
+
+          const total = jsonData.total;
+
+          return {
+            products,
+            total,
+          };
+        } catch (error) {
+          console.error('Error fetching JSON data:', error);
+          return null;
+        }
+      },
+    };
+
+    async function displayProductsInForm() {
+      const limit = 5;
+      const skip = 0;
+      const result = await productApi.getProducts(limit, skip);
+
+      if (result) {
+        const productContainer = document.getElementById('productContainer');
+
+        result.products.forEach(product => {
+          const productCard = document.createElement('div');
+          productCard.classList.add('product-card');
+
+          const productImageContainer = document.createElement('div');
+          productImageContainer.classList.add('product-image');
+
+         
+          const thumbnailImage = document.createElement('img');
+          thumbnailImage.src = product.thumbnail;
+          thumbnailImage.alt = product.title + ' Thumbnail';
+          productImageContainer.appendChild(thumbnailImage);
+
+      
+          product.images.forEach(imageUrl => {
+            const additionalImage = document.createElement('img');
+            additionalImage.src = imageUrl;
+            additionalImage.alt = product.title + ' Image';
+            productImageContainer.appendChild(additionalImage);
+          });
+
+          productCard.appendChild(productImageContainer);
+
+     
+          const productInfo = document.createElement('div');
+          productInfo.innerHTML = `
+            <h2>${product.title}</h2>
+            <p>${product.description}</p>
+            <p>Price: $${product.price}</p>
+            <p>Discount: ${product.discountPercentage}%</p>
+            <p>Stock: ${product.stock}</p>
+            <p>Brand: ${product.brand}</p>
+            <p>Category: ${product.category}</p>
+          `;
+
+          productCard.appendChild(productInfo);
+
+          productContainer.appendChild(productCard);
+        });
+      }
+    }
+
+    
+    displayProductsInForm();
+  </script>
+</body>
+</html>
